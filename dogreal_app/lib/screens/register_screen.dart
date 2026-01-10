@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import '../utils/constants.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_textfield.dart';
+import 'home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -81,31 +84,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      // TODO: 实现注册逻辑
-      await Future.delayed(const Duration(seconds: 2));
-
-      setState(() {
-        _isLoading = false;
-      });
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      final success = await authProvider.register(
+        username: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('注册成功！'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-        Navigator.pop(context);
+        if (success) {
+          // 注册成功，直接登录并导航到主页
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            (route) => false,
+          );
+        } else {
+          // 注册失败，显示错误信息
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(authProvider.error ?? '注册失败'),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    
     return Scaffold(
       backgroundColor: AppColors.black,
       appBar: AppBar(
@@ -266,7 +277,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   CustomButton(
                     text: '注册',
                     onPressed: _handleRegister,
-                    isLoading: _isLoading,
+                    isLoading: authProvider.isLoading,
                   ),
                   
                   const SizedBox(height: AppSpacing.xl),

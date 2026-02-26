@@ -10,6 +10,12 @@ class AppColors {
   static const Color lightGrey = Color(0xFF636366);
   static const Color textGrey = Color(0xFF8E8E93);
   
+  // 别名 - 为了兼容性
+  static const Color background = black;
+  static const Color surface = darkGrey;
+  static const Color textPrimary = white;
+  static const Color textSecondary = textGrey;
+  
   // BeReal 的强调色
   static const Color primary = Color(0xFFFFFFFF);
   static const Color secondary = Color(0xFF636366);
@@ -34,6 +40,15 @@ class AppTextStyles {
     fontWeight: FontWeight.bold,
     color: AppColors.white,
     letterSpacing: -0.3,
+  );
+  
+  // 别名
+  static const TextStyle heading = heading2;
+  
+  static const TextStyle heading3 = TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+    color: AppColors.white,
   );
   
   static const TextStyle body = TextStyle(
@@ -78,4 +93,9 @@ class AppRadius {
   static const double lg = 16.0;
   static const double xl = 24.0;
   static const double full = 999.0;
+  
+  // 别名
+  static const double small = sm;
+  static const double medium = md;
+  static const double large = lg;
 }

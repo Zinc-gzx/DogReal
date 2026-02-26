@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'providers/auth_provider.dart';
+import 'providers/pet_provider.dart';
+import 'providers/post_provider.dart';
+import 'providers/friend_provider.dart';
+import 'providers/challenge_provider.dart';
 import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
+import 'screens/main_navigation_screen.dart';
+import 'screens/pet_profile_setup_screen.dart';
 import 'utils/constants.dart';
 
 void main() {
+  // 配置timeago中文语言包
+  timeago.setLocaleMessages('zh', timeago.ZhCnMessages());
+  
   // 设置状态栏样式
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
@@ -26,8 +35,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AuthProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => PetProvider()),
+        ChangeNotifierProvider(create: (_) => PostProvider()),
+        ChangeNotifierProvider(create: (_) => FriendProvider()),
+        ChangeNotifierProvider(create: (_) => ChallengeProvider()),
+      ],
       child: MaterialApp(
         title: 'DogReal',
         debugShowCheckedModeBanner: false,
@@ -68,7 +83,30 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
   Future<void> _checkAuth() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final petProvider = Provider.of<PetProvider>(context, listen: false);
+    final challengeProvider = Provider.of<ChallengeProvider>(context, listen: false);
+    
+    // 初始化通知服务
+    await challengeProvider.initializeNotifications();
+    
     await authProvider.tryAutoLogin();
+    
+    // 如果已登录，检查是否有宠物档案和今日挑战
+    if (authProvider.isAuthenticated) {
+      try {
+        await petProvider.fetchMyPet();
+        print('宠物档案加载: ${petProvider.hasPet ? "有档案" : "无档案"}');
+      } catch (e) {
+        print('加载宠物档案失败: $e');
+      }
+      
+      try {
+        await challengeProvider.fetchTodayChallenge();
+      } catch (e) {
+        print('加载今日挑战失败: $e');
+      }
+    }
+    
     setState(() {
       _isLoading = false;
     });
@@ -87,11 +125,19 @@ class _AuthWrapperState extends State<AuthWrapper> {
       );
     }
 
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, _) {
-        return authProvider.isAuthenticated
-            ? const HomeScreen()
-            : const LoginScreen();
+    return Consumer2<AuthProvider, PetProvider>(
+      builder: (context, authProvider, petProvider, _) {
+        if (!authProvider.isAuthenticated) {
+          return const LoginScreen();
+        }
+        
+        // 已登录但没有宠物档案，跳转到创建页面
+        if (!petProvider.hasPet) {
+          return const PetProfileSetupScreen();
+        }
+        
+        // 已登录且有宠物档案，进入主页
+        return const MainNavigationScreen();
       },
     );
   }

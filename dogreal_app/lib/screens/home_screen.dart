@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/friend_provider.dart';
+import '../providers/pet_provider.dart';
+import '../providers/challenge_provider.dart';
 import '../utils/constants.dart';
 import 'login_screen.dart';
+import 'friends_screen.dart';
+import 'pet_profile_setup_screen.dart';
+import 'daily_challenge_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -10,6 +16,8 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final petProvider = Provider.of<PetProvider>(context, listen: false);
+    final friendProvider = Provider.of<FriendProvider>(context, listen: false);
     final user = authProvider.user;
 
     return Scaffold(
@@ -29,7 +37,11 @@ class HomeScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout, color: AppColors.white),
             onPressed: () async {
+              // 清除所有Provider状态
+              petProvider.clearPet();
+              friendProvider.clear();
               await authProvider.logout();
+              
               if (context.mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -41,7 +53,7 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,18 +132,137 @@ class HomeScreen extends StatelessWidget {
               
               const SizedBox(height: AppSpacing.xxl),
               
-              // 功能区域（待开发）
+              // 功能按钮
+              _buildActionButton(
+                context,
+                icon: Icons.pets,
+                label: '宠物档案',
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const PetProfileSetupScreen(),
+                    ),
+                  );
+                },
+              ),
+              
+              const SizedBox(height: AppSpacing.md),
+              
+              _buildActionButton(
+                context,
+                icon: Icons.people,
+                label: '好友',
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const FriendsScreen(),
+                    ),
+                  );
+                },
+              ),
+              
+              const SizedBox(height: AppSpacing.xxl),
+              
+              // 今日挑战
+              _buildActionButton(
+                context,
+                icon: Icons.emoji_events,
+                label: '今日挑战',
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const DailyChallengeScreen(),
+                    ),
+                  );
+                },
+              ),
+              
+              const SizedBox(height: AppSpacing.xxl),
+              
+              // 即将推出
               const Text(
                 '即将推出',
                 style: AppTextStyles.heading2,
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
-                '📷 拍摄宠物照片\n🐾 添加宠物档案\n👥 添加好友\n🔔 每日推送提醒',
+                '🏆 好友排行榜\n📊 数据统计',
                 style: AppTextStyles.bodySecondary,
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    final friendProvider = Provider.of<FriendProvider>(context);
+    final hasBadge = label == '好友' && friendProvider.pendingRequestsCount > 0;
+    
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.darkGrey,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(
+            color: AppColors.white.withOpacity(0.1),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Stack(
+              children: [
+                Icon(icon, color: AppColors.white, size: 28),
+                if (hasBadge)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: AppColors.error,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        '${friendProvider.pendingRequestsCount}',
+                        style: const TextStyle(
+                          color: AppColors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Text(
+                label,
+                style: AppTextStyles.heading2,
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: AppColors.white.withOpacity(0.5),
+              size: 16,
+            ),
+          ],
         ),
       ),
     );

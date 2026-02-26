@@ -4,7 +4,7 @@ import '../providers/auth_provider.dart';
 import '../utils/constants.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_textfield.dart';
-import 'home_screen.dart';
+import 'pet_profile_setup_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -94,9 +94,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (mounted) {
         if (success) {
-          // 注册成功，直接登录并导航到主页
+          // 注册成功，跳转到宠物档案创建页面
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            MaterialPageRoute(builder: (context) => const PetProfileSetupScreen()),
             (route) => false,
           );
         } else {

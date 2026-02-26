@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 const connectDB = require('./config/database');
 
 // Load environment variables
@@ -20,10 +21,23 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// 静态文件服务 - 提供上传的图片
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // Routes
-app.use('/api/v1/auth', require('./routes/auth.routes'));
-app.use('/api/v1/users', require('./routes/user.routes'));
-app.use('/api/v1/pets', require('./routes/pet.routes'));
+const authRoutes = require('./routes/auth.routes');
+const petRoutes = require('./routes/petRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
+const postRoutes = require('./routes/postRoutes');
+const friendRoutes = require('./routes/friendRoutes');
+const challengeRoutes = require('./routes/challengeRoutes');
+
+app.use('/api/auth', authRoutes);
+app.use('/api/pets', petRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/friends', friendRoutes);
+app.use('/api/challenges', challengeRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

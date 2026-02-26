@@ -45,5 +45,13 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>需要访问相机来拍摄宠物照片</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>需要访问麦克风用于录制视频</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>需要访问相册来选择宠物照片</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>需要发送通知来提醒您参与每日挑战</string>
 </dict>
 </plist>

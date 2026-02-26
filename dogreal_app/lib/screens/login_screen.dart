@@ -5,7 +5,7 @@ import '../utils/constants.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_textfield.dart';
 import 'register_screen.dart';
-import 'home_screen.dart';
+import 'main_navigation_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -61,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (success) {
           // 登录成功，导航到主页
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
             (route) => false,
           );
         } else {
